@@ -25,6 +25,17 @@ export default function Home() {
     onError: () => {
       message.error("Failed to add student!");
     },
+  });
+
+  const { mutate: removeStudent } = useMutation({
+    mutationFn: deleteStudent,
+    onSuccess: () => {
+      message.success("Student deleted successfully!");
+      refetch();
+    },
+    onError: () => {
+      message.error("Failed to delete student!");
+    },
   })
 
   const columns = [
@@ -63,7 +74,7 @@ export default function Home() {
       render: (record) => (
         <div className="flex justify-end">
           <Button className="mr-2" icon={<EditOutlined/>}>Edit</Button>
-          <Button danger icon={<DeleteOutlined/>}>Delete</Button>
+          <Button danger icon={<DeleteOutlined/>} onClick={() => removeStudent(record?.id)}>Delete</Button>
         </div>
       )
     }
