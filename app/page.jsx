@@ -9,6 +9,7 @@ import { getStudents, addStudent, updateStudent, deleteStudent } from "@/app/ser
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   const { data: students, isLoading, refetch } = useQuery({
     queryKey: "students",
@@ -37,6 +38,19 @@ export default function Home() {
       message.error("Failed to delete student!");
     },
   })
+
+  const { mutate: editStudent } = useMutation({
+    mutationFn: ({ id, payload }) => updateStudent(id, payload),
+    onSuccess: () => {
+      message.success("Student updated successfully!");
+      refetch();
+      setIsModalOpen(false);
+      setSelectedStudent(null);
+    },
+    onError: () => {
+      message.error("Failed to update student!");
+    },
+  });
 
   const columns = [
     {
@@ -73,7 +87,10 @@ export default function Home() {
       key: "action",
       render: (record) => (
         <div className="flex justify-end">
-          <Button className="mr-2" icon={<EditOutlined/>}>Edit</Button>
+          <Button className="mr-2" icon={<EditOutlined/>} onClick={() => {
+            setSelectedStudent(record);
+            setIsModalOpen(true);
+          }}>Edit</Button>
           <Button danger icon={<DeleteOutlined/>} onClick={() => removeStudent(record?.id)}>Delete</Button>
         </div>
       )
@@ -84,13 +101,30 @@ export default function Home() {
     saveStudent(payload);
   }
 
+  const handleUpdate = (payload) => {
+    editStudent({
+      id: selectedStudent.id,
+      payload,
+    });
+  }
+
   return (
     <div className="container mx-auto"> 
       <div className="flex justify-end mt-4">
         <Button type="primary" onClick={() => setIsModalOpen(true)}>Add Studnet</Button>
       </div>
       <Table className="mt-4" dataSource={students} loading={isLoading} columns={columns} />
-      {isModalOpen && <AddStudentModal open={isModalOpen} onCancel={() => setIsModalOpen(false)} onAdd={handleAdd}/>}
+      {isModalOpen && 
+      <AddStudentModal 
+        open={isModalOpen} 
+        onCancel={() => {
+          setIsModalOpen(false);
+          setSelectedStudent(null);
+        }} 
+        onAdd={handleAdd} 
+        onUpdate={handleUpdate}
+        selectedStudent={selectedStudent}
+      />}
     </div>
   );
 }

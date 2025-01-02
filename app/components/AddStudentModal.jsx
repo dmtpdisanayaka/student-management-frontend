@@ -1,18 +1,33 @@
+import { useEffect } from "react";
 import { Modal, Button, Form, Input, InputNumber } from "antd"
+import { updateStudent } from "../services";
 
-export const AddStudentModal = ({ open, onCancel, onAdd, onUpdate }) => {
+export const AddStudentModal = ({ open, onCancel, onAdd, onUpdate, selectedStudent }) => {
+    const [form] = Form.useForm();
+
+    useEffect(() => {
+        if (selectedStudent) {
+            form.setFieldsValue(selectedStudent);
+        }
+    }, [selectedStudent]);
+
     const handleFinish = (formData) => {
-        onAdd(formData);
+        if(selectedStudent) {
+            onUpdate(formData);
+        } else {
+            onAdd(formData);
+        }
     }
 
     return (
         <Modal
-            title="Add Student"
+            title={selectedStudent ? "Edit Student" : "Add Student"}
             open={open}
             footer={null}
             onCancel={onCancel}
         >
             <Form
+                form={form}
                 layout="vertical"
                 onFinish={handleFinish}
             >
